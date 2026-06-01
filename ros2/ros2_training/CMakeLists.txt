@@ -24,10 +24,14 @@ ament_target_dependencies(listener rclcpp std_msgs)
 add_executable(service_server src/service_server_main.cpp)
 ament_target_dependencies(service_server rclcpp std_msgs example_interfaces)
 
+add_executable(service_client src/service_client_timer_based_main.cpp)
+ament_target_dependencies(service_client rclcpp example_interfaces)
+
 install(TARGETS
   talker
   listener
   service_server
+  service_client
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
