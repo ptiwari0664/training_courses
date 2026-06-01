@@ -12,6 +12,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
 
@@ -27,11 +28,19 @@ ament_target_dependencies(service_server rclcpp std_msgs example_interfaces)
 add_executable(service_client src/service_client_timer_based_main.cpp)
 ament_target_dependencies(service_client rclcpp example_interfaces)
 
+add_executable(action_server src/action_server_main.cpp)
+ament_target_dependencies(action_server rclcpp rclcpp_action example_interfaces)
+
+add_executable(action_client src/action_client_main.cpp)
+ament_target_dependencies(action_client rclcpp rclcpp_action example_interfaces)
+
 install(TARGETS
   talker
   listener
   service_server
   service_client
+  action_server
+  action_client
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
