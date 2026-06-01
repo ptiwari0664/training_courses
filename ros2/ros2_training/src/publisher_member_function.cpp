@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * @file    publisher_member_function.cpp
+ * @brief   ROS2 Publisher Implementation
+ * 
+ * This module demonstrates a ROS2 publisher that sends messages at regular intervals.
+ * The publisher sends String messages to a ROS2 topic.
+ * 
+ * Copyright 2026 Syntellect Robotics Pvt Ltd
+ * Licensed under the Apache License, Version 2.0
+ * See http://www.apache.org/licenses/LICENSE-2.0 for details.
+ ******************************************************************************/
 // Standard C++ library headers
 #include <chrono>        // For time-related functionality
 #include <functional>    // For std::bind() to bind member functions

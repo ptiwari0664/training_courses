@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * @file    subscriber_member_function.cpp
+ * @brief   ROS2 Subscriber Implementation
+ * 
+ * This module demonstrates a ROS2 subscriber that listens for messages on a topic.
+ * The subscriber processes incoming String messages and logs them to the console.
+ * 
+ * Copyright 2026 Syntellect Robotics Pvt Ltd
+ * Licensed under the Apache License, Version 2.0
+ * See http://www.apache.org/licenses/LICENSE-2.0 for details.
+ ******************************************************************************/
 // Standard C++ library header
 #include <memory>        // For smart pointers (std::make_shared)
 
