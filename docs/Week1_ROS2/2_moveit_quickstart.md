@@ -10,84 +10,50 @@ MoveIt is a flexible motion planning framework for ROS that enables robots to pe
 - Interact with robotic manipulators
 - Plan and execute collision-free trajectories
 
-By the end of this tutorial, you'll be able to create motion plans visually and understand how motion planning works in real robotics applications.
-
 ---
 
-## Key MoveIt Concepts
-
-Before we begin hands-on work, here are the core MoveIt concepts students should understand:
-
-- **Kinematics:** Calculating joint values for a desired end-effector pose (Inverse Kinematics) and computing the resulting pose from joint values (Forward Kinematics).
+## Section 1 : Key MoveIt Concepts
+Refer below architecture diagram. Before we begin hands-on work, here are the core MoveIt concepts we should understand:
+![Empty RViz window showing grid and no robot](images/moveit_pipeline.png)
+ - **Kinematics:** Calculating joint values for a desired end-effector pose (Inverse Kinematics) and computing the resulting pose from joint values (Forward Kinematics).
+    - MoveIt uses a kinematics plugin architecture so custom IK solvers can be used.
+    - Default IK plugin is KDL (configured by the Setup Assistant); alternatives include IKFast and TRAC-IK.
+    - Solver tuning: search resolution, search timeout, and sampling attempts affect IK success and speed.
+    - IK solvability depends on joint limits and workspace reachability; verify URDF joint limits when debugging.
 - **Motion Planning:** Finding a collision-free sequence of joint configurations (a trajectory) that moves the robot from a start to a goal state.
 - **Planning Scene / Planning Scene Monitor:** The representation of the robot and its environment (obstacles, attached objects). The Planning Scene Monitor keeps this representation up to date.
-- **`move_group` node:** The central MoveIt component that exposes planning, execution, and scene services and coordinates planners, kinematics, and controllers.
+ - **`move_group` node:** The central MoveIt component that exposes planning, execution, and scene services and coordinates planners, kinematics, and controllers.
+  ![Empty RViz window showing grid and no robot](images/move_group.png)
+    - **User interfaces:** C++ `MoveGroupInterface` and RViz Motion Planning plugin provide access to actions/services.
+    - **Configuration sources:** reads `robot_description` (URDF), `robot_description_semantic` (SRDF), and MoveIt `config/` params (kinematics, planning, limits).
+    - **Robot interface:** communicates via ROS topics/actions to obtain joint states, sensor data, and to send trajectories to controllers.
+    - **Joint state:** listens on `/joint_states`; supports multiple publishers and partial state publishers.
+    - **Transforms:** listens to TF for global frame transforms; requires `robot_state_publisher` to publish robot TFs.
+    - **Controllers:** uses `FollowJointTrajectoryAction` clients to command controllers (server runs on robot/controller manager).
+    - **Planning scene:** maintains the planning scene via the Planning Scene Monitor (objects, attached bodies, collision world).
+     ![Empty RViz window showing grid and no robot](images/planning_scene_monitor.svg)
+    - **Extensible capabilities:** implemented as plugins (pick/place, planners, kinematics) configurable via ROS parameters and pluginlib.
 - **Collision Checking:** Checking candidate robot configurations or trajectories against the planning scene to ensure no self-collisions or collisions with obstacles.
 - **Trajectory Processing:** Post-processing planned trajectories (smoothing, time parameterization, scaling) before execution.
 - **MoveIt Task Constructor:** A framework for composing higher-level tasks (e.g., pick-and-place) as sequences of smaller planning and manipulation steps.
 - **Hybrid Planning:** Combining different planning modalities (e.g., Cartesian + joint-space) to satisfy constraints like straight-line end-effector motion.
 
-These concepts will appear throughout the exercises. Refer below architecture diagram.
-![Empty RViz window showing grid and no robot](images/moveit_pipeline.png)
-
 ---
 
-## MoveIt Setup Assistant Deep Dive (full lab)
+## Section 2 : MoveIt - Planning Groups and Robot Model
 
-These two days focus on creating a `moveit_config` for a custom robot using the MoveIt Setup Assistant. The material is based on the Setup Assistant tutorial and expanded with lab exercises.
-
-Core learning objectives:
-- Import and validate a URDF in the Setup Assistant
-- Define kinematic groups, end effectors, and planning groups
-- Configure virtual joints, passive joints, and joint limits
-- Generate the self-collision matrix and fine-tune it
-- Export a `moveit_config` package and integrate controllers and launch files
-- Test the generated config in RViz and iterate
-
-Suggested Day 2 schedule:
-- 0:00–0:20 — Setup Assistant overview and prerequisites (URDF, meshes, ROS params)
-- 0:20–0:60 — Walk through URDF import, fixed/virtual joints, and groups
-- 0:60–1:20 — Configure end effector, planning groups, and kinematics plugins
-- 1:20–1:50 — Generate and inspect `moveit_config` (SRDF, launch files)
-- 1:50–2:00 — Quick test in RViz
-
-Suggested Day 3 schedule:
-- 0:00–0:30 — Controllers, ros_control / ros2_control integration notes
-- 0:30–1:00 — Self-collision matrix generation, sensors and planning scene updates
-- 1:00–1:30 — Hands-on: adjust SRDF, add/modify collision geometry
-- 1:30–2:00 — Final testing, debugging, and deploying to real robot (discussion)
-
-Practical notes and link:
-- The official Setup Assistant tutorial is a great step-by-step reference: https://docs.ros.org/en/kinetic/api/moveit_tutorials/html/doc/setup_assistant/setup_assistant_tutorial.html
-- For MoveIt2 / ROS2 users, the same steps apply conceptually — use the MoveIt Setup Assistant packaged for your ROS distro and export a `moveit_config` compatible with MoveIt2.
-
-Hands-on lab deliverable (end of Day 3):
-- A generated `moveit_config` package in the student's workspace that can be launched to visualize the robot in RViz and run simple plans.
-
----
-
-## Setup Assistant — 12-step practical walkthrough (detailed)
-
-Below is a teacher-friendly, step-by-step paraphrase of the MoveIt Setup Assistant workflow. Each step includes the goal, commands or UI actions, teaching points, and suggested in-class exercises or checks.
-
-Prerequisite command (run on instructor machine or ask students to run beforehand):
-
-```bash
-# Launch the MoveIt Setup Assistant (ROS1 example)
-roslaunch moveit_setup_assistant setup_assistant.launch
-```
-
-
-
----
+This section will teach you how to create motion plans in MoveIt using RViz and the MoveIt Display plugin. Rviz is the primary visualizer in ROS and a very useful tool for debugging robotics. The MoveIt Display plugin allows you to setup virtual environments (planning scenes), create start and goal states for the robot interactively, test various motion planners, and visualize the output. Let’s get started!
 
 ## Step 1: Launch the Demo and Configure the Plugin
+
+> For More Details: https://moveit.picknik.ai/main/doc/tutorials/quickstart_in_rviz/quickstart_in_rviz_tutorial.html
 
 ### 1.1 Starting the MoveIt Demo
 
 Launch the MoveIt demonstration with the Kinova Gen 3 robot:
 
 ```bash
+# Launch the MoveIt Setup Assistant (ROS1 example)
 ros2 launch moveit2_tutorials demo.launch.py
 ```
 
@@ -553,28 +519,6 @@ Now that you understand motion planning, try this complete workflow:
 1. Adjust **Velocity Scaling** and **Acceleration Scaling** in the Planning tab
 2. Verify values are between 0.0 and 1.0
 3. Save your preferred settings in the RViz configuration
-
----
-
-## Next Steps
-
-Now that you've mastered visual motion planning, you're ready for:
-
-1. **Your First C++ MoveIt Project**
-   - Create command-line programs to control the robot
-   - Learn the MoveIt C++ API
-
-2. **Advanced Motion Planning**
-   - Plan around obstacles in the environment
-   - Use different motion planning algorithms
-
-3. **Pick and Place Operations**
-   - Combine motion planning with gripper control
-   - Use MoveIt Task Constructor for complex tasks
-
-4. **Real Robot Integration**
-   - Deploy motion plans on actual hardware
-   - Handle real-world physics and uncertainty
 
 ---
 
