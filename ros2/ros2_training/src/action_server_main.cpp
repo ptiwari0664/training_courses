@@ -88,6 +88,7 @@ private:
     const rclcpp_action::GoalUUID & uuid,
     std::shared_ptr<const Fibonacci::Goal> goal)
   {
+    (void)uuid;  // Parameter not used but required by interface
     // Log the received request
     RCLCPP_INFO(
       this->get_logger(), 
@@ -117,6 +118,7 @@ private:
   rclcpp_action::CancelResponse handle_cancel(
     const std::shared_ptr<GoalHandleFibonacci> goal_handle)
   {
+    (void)goal_handle;  // Parameter not used but required by interface
     RCLCPP_INFO(this->get_logger(), "Received cancellation request");
     // Accept cancellation requests
     return rclcpp_action::CancelResponse::ACCEPT;
